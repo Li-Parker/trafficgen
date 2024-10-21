@@ -7,6 +7,8 @@ import wandb
 from torchmetrics import Metric
 from tqdm import tqdm
 
+from trafficgen.utils.utils import normalize_angle
+
 
 class MMD(Metric):
     full_state_update: bool = False

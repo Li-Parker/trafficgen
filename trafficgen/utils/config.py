@@ -26,6 +26,6 @@ def get_parsed_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', '-c', type=str, default='cluster')
     parser.add_argument('--exp_name', '-e', default="test", type=str)
-    parser.add_argument('--devices', '-d', nargs='+', default=[0, 1, 2, 3], type=int)
+    parser.add_argument('--devices', '-d', nargs='+', default=[0], type=int)
     args = parser.parse_args()
     return args

@@ -430,6 +430,7 @@ class initDataset(Dataset):
     def load_data(self):
         if self.cfg['use_cache']:
             data_path = os.path.join(self.data_path, 'init_cache.pkl')
+            print(data_path)
             with open(data_path, 'rb+') as f:
                 self.data_loaded = pickle.load(f)
             self.data_len = len(self.data_loaded)

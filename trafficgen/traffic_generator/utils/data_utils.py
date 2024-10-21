@@ -224,6 +224,7 @@ class InitDataset(Dataset):
 
         self.data_len = None
         self.data_loaded = {}
+        # self.load_data()
         self.cfg = cfg
         super(InitDataset, self).__init__()
 
@@ -243,7 +244,6 @@ class InitDataset(Dataset):
             self.data_loaded[i] = data[0]
 
     def __len__(self):
-
         if not self.data_loaded:
             self.load_data()
 
@@ -253,7 +253,6 @@ class InitDataset(Dataset):
         """
         Calculate for saving spaces
         """
-
         if not self.data_loaded:
             self.load_data()
 

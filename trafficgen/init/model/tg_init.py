@@ -18,7 +18,7 @@ class initializer(pl.LightningModule):
     """ A transformer model with wider latent space """
     def __init__(self, cfg):
         super().__init__()
-        self.save_hyperparameters()
+        self.save_hyperparameters()  # 将模型的超参数保存到日志中，以便在训练过程中进行跟踪和记录
         self.cfg = cfg
         # input embedding stem
         self.hidden_dim = cfg['hidden_dim']

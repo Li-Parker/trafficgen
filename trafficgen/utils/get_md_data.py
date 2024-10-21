@@ -12,6 +12,7 @@ The output images after placing vehicles in the scenes will be saved to the TMP_
 import argparse
 import os
 import pickle
+from enum import Enum
 
 import numpy as np
 import torch

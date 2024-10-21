@@ -1,10 +1,10 @@
 # Config format schema number
 format_version: 4
 map_size: 50
-device: 'gpu'
+device: 'cuda'
 
 debug: False
-data_path: '/data/lanfeng/waymo_data/init_data'
+data_path: './data/lanfeng/waymo_data/init_data'
 sample_gap: 20
 use_cache: True
 
