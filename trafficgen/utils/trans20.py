@@ -418,6 +418,50 @@ def parse_data(inut_path, output_path, pre_fix=None):
                     p = os.path.join(output_path, '{}_{}.pkl'.format(pre_fix, cnt))
 
                 scenario.ParseFromString(data)
+                '''
+                For param scenario:
+                01. scenario_id - 
+                    A unique string identifier for this scenario.
+                02. timestamps_seconds - 
+                    Repeated field containing timestamps for each step in the Scenario starting at zero.
+                03. tracks - 
+                    Repeated field containing tracks for each object.
+                04. id - 
+                    A unique numeric ID for each object.
+                05. object_type - 
+                    The type of object for this track (vehicle, pedestrian, or cyclist).
+                06. states - 
+                    Repeated field containing the state of the object for each time step containing its 3D position, 
+                    velocity, heading, dimensions, and a valid flag. This field corresponds to the top level 
+                    timestamps_seconds field such that tracks[i].states[j] indexes the ith agent's state at time 
+                    timestamps_seconds[j]
+                07. dynamic_map_states - 
+                    Repeated field containing traffic signal states across time steps such that dynamic_map_states[i] 
+                    occurs at timestamps_seconds[i]
+                08. lane_states - 
+                    Repeated field containing the set of traffic signal states and the IDs of lanes they control 
+                    (indexes into the map_features field) for a given time step.
+                09. map_features - 
+                    Repeated field containing the set of map data for the scenario. This includes lane centers, 
+                    lane boundaries, road boundaries, crosswalks, speed bumps, and stop signs. Map features are 
+                    defined as 3D polylines or polygons. See the map proto definitions for full details.
+                10. sdc_track_index - 
+                    The track index of the autonomous vehicle in the scene.
+                11. objects_of_interest - 
+                    Repeated field containing indices into the tracks field of objects determined to have behavior that 
+                    may be useful for research training.
+                12. tracks_to_predict - 
+                    Repeated field containing a set of indices into the tracks field indicating which objects must be 
+                    predicted. This field is provided in the training and validation sets only. These are selected to 
+                    include interesting behavior and a balance of object types.
+                13. current_time_index - 
+                    The index into timestamps_seconds for the current time. All steps before this index are history data 
+                    and all steps after this index are future data. Predictions are to be made at the current time.
+                14. compressed_frame_laser_data - 
+                    Repeated fields containing per time step Lidar data. This contains lidar data up to the current time
+                    step (first 1 second) for each segment. Note that this field is only populated in the lidar data 
+                    split of the Motion Dataset.
+                '''
                 scene = dict()
                 scene['id'] = scenario.scenario_id
                 sdc_index = scenario.sdc_track_index
@@ -492,4 +536,4 @@ if __name__ == '__main__':
     pre_fix = None
     #  parse raw data from input path to output path,
     #  there is 1000 raw data in google cloud, each of them produce about 500 pkl file
-    parse_data(raw_data_path, processed_data_path, pre_fix)
+    parse_data(raw_data_path, processed_data_path)
