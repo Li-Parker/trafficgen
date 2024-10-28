@@ -479,12 +479,17 @@ if __name__ == '__main__':
 
     Some data may be broken
     """
-    raw_data_path = sys.argv[1]
-    processed_data_path = sys.argv[2]
-    pre_fix = sys.argv[3]
+    # raw_data_path = sys.argv[1] or '../data/tf_record/raw'
+    # processed_data_path = sys.argv[2] or '../data/tf_record/process'
+    # pre_fix = sys.argv[3]
+
     # raw_data_path = ".\\data"
     # processed_data_path = ".\\debug_data"
     # pre_fix = str(uuid.uuid4())
+
+    raw_data_path = "../data/tf_record/raw"
+    processed_data_path = "../data/tf_record/process"
+    pre_fix = None
     #  parse raw data from input path to output path,
     #  there is 1000 raw data in google cloud, each of them produce about 500 pkl file
     parse_data(raw_data_path, processed_data_path, pre_fix)
