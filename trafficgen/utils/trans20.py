@@ -104,6 +104,7 @@ def extract_tracks(f, sdc_index):
     # sdc_theta = yaw_to_y(sdc_yaw).astype(np.float32)
 
     for i in range(len(f)):
+        f_item = f[i]
         x = np.array([state.center_x for state in f[i].states])
         y = np.array([state.center_y for state in f[i].states])
         # pos = np.concatenate([np.expand_dims(x, -1), np.expand_dims(y, -1)], axis=-1)
@@ -140,6 +141,7 @@ def extract_dynamic(f):
 
     for i in range(BATCH_SIZE):
         # states = f[i * time_sample].lane_states
+        f_item = f[i]
         states = f[i].lane_states
         traf_list = []
         for j in range(len(states)):
@@ -283,6 +285,7 @@ def extract_map(f):
     center_infos = {}
     # nearbys = dict()
     for i in range(len(f)):
+        f_item = f[i]
         id = f[i].id
 
         if f[i].HasField('lane'):
@@ -410,6 +413,10 @@ def parse_data(inut_path, output_path, pre_fix=None):
         if not 'tfrecord' in file_path:
             continue
         dataset = tf.data.TFRecordDataset(file_path, compression_type='')
+        dataset_len = 0
+        for i in dataset.as_numpy_iterator():
+            dataset_len += 1
+
         for j, data in enumerate(dataset.as_numpy_iterator()):
             try:
                 if pre_fix == 'None':

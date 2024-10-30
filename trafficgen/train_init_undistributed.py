@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 from trafficgen.init.model.tg_init import initializer
 from trafficgen.init.utils.init_dataset import initDataset
 from trafficgen.utils.config import load_config_init, get_parsed_args
+from trafficgen.utils.typedef import AgentType, RoadEdgeType, RoadLineType
 
 if __name__ == '__main__':
     args = get_parsed_args()
@@ -42,11 +43,13 @@ if __name__ == '__main__':
     train_set, val_set = data.random_split(train_set, [train_set_size, valid_set_size])
 
     train_loader = DataLoader(
-        train_set, batch_size=cfg['batch_size'], num_workers=cfg['num_workers'], shuffle=True, drop_last=True
+        train_set, batch_size=cfg['batch_size'], num_workers=cfg['num_workers'], shuffle=True, drop_last=True,
+        persistent_workers=True
     )
 
     val_loader = DataLoader(
-        val_set, batch_size=cfg['batch_size'], num_workers=cfg['num_workers'], shuffle=False, drop_last=True
+        val_set, batch_size=cfg['batch_size'], num_workers=cfg['num_workers'], shuffle=False, drop_last=True,
+        persistent_workers=True
     )
 
     model = initializer(cfg)
