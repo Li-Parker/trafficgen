@@ -138,7 +138,15 @@ def process_map(lane, traf, center_num=384, edge_num=128, lane_range=60, offest=
     center_2 = lane_type == 2
     center_3 = lane_type == 3
     center_ind = center_1 + center_2 + center_3
-
+    '''
+    // 道路类型
+    enum LaneType {
+        TYPE_UNDEFINED = 0;   // 未定义
+        TYPE_FREEWAY = 1;  // 高速公路
+        TYPE_SURFACE_STREET = 2;  // 地表街道
+        TYPE_BIKE_LANE = 3;  // 自行车道
+    }
+    '''
     boundary_1 = lane_type == 15
     boundary_2 = lane_type == 16
     bound_ind = boundary_1 + boundary_2

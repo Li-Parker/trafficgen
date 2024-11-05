@@ -17,7 +17,7 @@ def get_agent_pos_from_vec(vec, long_lat, speed, vel_heading, heading, bbox):
     x1, y1, x2, y2 = vec[:, 0], vec[:, 1], vec[:, 2], vec[:, 3]
     x_center, y_center = (x1 + x2) / 2, (y1 + y2) / 2
 
-    vec_len = ((x1 - x2)**2 + (y1 - y2)**2)**0.5
+    vec_len = ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
 
     vec_dir = torch.atan2(y2 - y1, x2 - x1)
 
@@ -123,7 +123,7 @@ def get_vec_rep(case_info):
     agent_x = np.repeat(agent_x[:, :, np.newaxis], axis=-1, repeats=vec_num)
     agent_y = np.repeat(agent_y[:, :, np.newaxis], axis=-1, repeats=vec_num)
 
-    dist = np.sqrt((vec_x - agent_x)**2 + (vec_y - agent_y)**2)
+    dist = np.sqrt((vec_x - agent_x) ** 2 + (vec_y - agent_y) ** 2)
 
     cent_mask = np.repeat(case_info['center_mask'][:, np.newaxis], axis=1, repeats=agent_num)
     dist[cent_mask == 0] = 10e5
@@ -134,7 +134,7 @@ def get_vec_rep(case_info):
     selected_vec = np.take_along_axis(vectors, vec_index[..., np.newaxis], axis=1)
 
     vx, vy = agent[..., 2], agent[..., 3]
-    v_value = np.sqrt(vx**2 + vy**2)
+    v_value = np.sqrt(vx ** 2 + vy ** 2)
     low_vel = v_value < 0.1
 
     dir_v = np.arctan2(vy, vx)
@@ -230,17 +230,17 @@ def process_agent(agent, RANGE=50, sort_agent=True):
     agent[..., 4] -= ego_heading
 
     agent_mask = agent[..., -1]
-    agent_type_mask = (agent[..., -2] == 1)
-    agent_range_mask = (abs(agent[..., 0]) < RANGE) * (abs(agent[..., 1]) < RANGE)
+    agent_type_mask = (agent[..., -2] == 1)  ## agent[...,-2] ==> agent倒数第二列保存的是对象的类型，而1代表该对象是车辆
+    agent_range_mask = (abs(agent[..., 0]) < RANGE) * (abs(agent[..., 1]) < RANGE)  ## 在范围RANGE内是否可见
     mask = agent_mask * agent_type_mask * agent_range_mask
 
     bs, agent_num, _ = agent.shape
     sorted_agent = np.zeros_like(agent)
     sorted_mask = np.zeros_like(agent_mask).astype(bool)
-    sorted_agent[:, 0] = agent[:, 0]
-    sorted_mask[:, 0] = True
-    for i in range(bs):
-        xy = copy.deepcopy(agent[i, 1:, :2])
+    sorted_agent[:, 0] = agent[:, 0]  ## 将ego_agent的信息添加进来
+    sorted_mask[:, 0] = True  ## ego_agent总是可见的
+    for i in range(bs):  ## bs代表总共几个时间步/帧，这里是10
+        xy = copy.deepcopy(agent[i, 1:, :2])  ## 注意，此时agent内存放的信息已经转为相对位置/速度/偏向角
         agent_i = copy.deepcopy(agent[i, 1:])
         mask_i = mask[i, 1:]
 
@@ -250,11 +250,11 @@ def process_agent(agent, RANGE=50, sort_agent=True):
 
         raster = np.floor(xy / 0.25)
         raster = np.concatenate([raster, agent_i, mask_i[:, np.newaxis]], -1)
-        y_index = np.argsort(-raster[:, 1])
-        raster = raster[y_index]
+        y_index = np.argsort(-raster[:, 1]) ## 使用np.argsort()获取排序后的索引
+        raster = raster[y_index] ## 对raster进行排序，排序后，那些无法被观察的对象会被放在最后
         y_set = np.unique(raster[:, 1])[::-1]
-        for y in y_set:
-            ind = np.argwhere(raster[:, 1] == y)[:, 0]
+        for y in y_set:  ##  前面按照raster[:,1]进行了排序,下面对于raster[:1]相同的元素按照raster[:0]再进行局部排序
+            ind = np.argwhere(raster[:, 1] == y)[:, 0]  ## np.argwhere()返回符合raster[:, 1] == y的元素坐标，如[0,1]，表示第一行第二列那个元素的值等于y
             ys = raster[ind]
             x_index = np.argsort(ys[:, 0])
             raster[ind] = ys[x_index]
@@ -264,7 +264,7 @@ def process_agent(agent, RANGE=50, sort_agent=True):
 
     if sort_agent:
         return sorted_agent[..., :-1], sorted_mask
-    else:
+    else:  ## 这里的sort_agent是指是否按照已经排好的顺序返回，如果为False，会随机打乱mask为true(即可见的)的数据
         agent_nums = np.sum(sorted_mask, axis=-1)
         for i in range(sorted_agent.shape[0]):
             agent_num = int(agent_nums[i])
@@ -420,6 +420,7 @@ class initDataset(Dataset):
     """
     If in debug, it will load debug dataset
     """
+
     def __init__(self, cfg):
         self.data_path = cfg['data_path']
         self.cfg = cfg
@@ -478,15 +479,15 @@ class initDataset(Dataset):
         data['all_agent'] = data['all_agent'][0:-1:gap]
         data['traffic_light'] = data['traffic_light'][0:-1:gap]
 
-        data['lane'] = transform_coordinate_map(data)
+        data['lane'] = transform_coordinate_map(data)   ##  变成了相对位置
 
-        case_info["agent"], case_info["agent_mask"] = process_agent(data['all_agent'], map_size, False)
+        case_info["agent"], case_info["agent_mask"] = process_agent(data['all_agent'], map_size, False)  ## 变成了相对位置
 
         case_info['center'], case_info['center_mask'], case_info['bound'], case_info['bound_mask'], \
-        case_info['cross'], case_info['cross_mask'], case_info['rest'], case_info['rest_mask'] = process_map(
+            case_info['cross'], case_info['cross_mask'], case_info['rest'], case_info['rest_mask'] = process_map(
             data['lane'], data['traffic_light'], lane_range=self.cfg['map_size'], offest=0)
 
-        get_vec_rep(case_info)
+        get_vec_rep(case_info) ##TODO
 
         agent = WaymoAgent(case_info['agent'], case_info['vec_based_rep'])
 
