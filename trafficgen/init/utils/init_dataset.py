@@ -50,6 +50,11 @@ def get_agent_pos_from_vec(vec, long_lat, speed, vel_heading, heading, bbox):
 
 
 def get_gt(case_info):
+    """
+    TODO
+    没有考虑到：如果agent占据了i=0的车道，如果有效车辆不足32，计算gt_bbox时会将原来的重写
+    没有考虑到同一个车道含有两个及以上车辆的情况
+    """
     # 0: vec_index
     # 1-2 long and lat percent
     # 3-5 speed, angle between velocity and car heading, angle between car heading and lane vector
@@ -145,10 +150,10 @@ def get_vec_rep(case_info):
     v_relative_dir = cal_rel_dir(dir_v, agent_dir)
     relative_dir = cal_rel_dir(agent_dir, dir)
 
-    v_relative_dir[low_vel] = 0
+    v_relative_dir[low_vel] = 0  ## 速度值太小，忽略，记作0
 
-    v_dir_mask = abs(v_relative_dir) < np.pi / 6
-    dir_mask = abs(relative_dir) < np.pi / 4
+    v_dir_mask = abs(v_relative_dir) < np.pi / 6  ## 速度方向和车辆方向夹角小于30°
+    dir_mask = abs(relative_dir) < np.pi / 4  ## 车辆行驶方向相对于车道方向的夹角小于45°
 
     agent_x = agent[..., 0]
     agent_y = agent[..., 1]
@@ -314,13 +319,13 @@ class WaymoAgent:
                 self.vec_based_info = vec_based_rep
 
         else:
-            self.feature = feature
-            self.position = feature[..., :2]
-            self.velocity = feature[..., 2:4]
-            self.heading = feature[..., [4]]
-            self.length_width = feature[..., 5:7]
-            self.type = feature[..., [7]]
-            self.vec_based_info = vec_based_info
+            self.feature = feature  ## 即每个时间片下n个车辆的信息
+            self.position = feature[..., :2]  ## agent的位置
+            self.velocity = feature[..., 2:4]  ## agent的速度
+            self.heading = feature[..., [4]]  ## agent的方向
+            self.length_width = feature[..., 5:7]  ## agent占据空间的长和宽
+            self.type = feature[..., [7]]  ## agent的类型
+            self.vec_based_info = vec_based_info  ## agent所在车道的向量化表示
 
     @staticmethod
     def from_list_to_array(inp_list):
@@ -368,7 +373,7 @@ class WaymoAgent:
         agent_feat = np.concatenate([pos, velo, cos_head, sin_head, self.length_width, vec_based_rep], axis=-1)
         return agent_feat
 
-    def get_rect(self, pad=0):
+    def get_rect(self, pad=0):  ## 返回的是agent上下左右四个角的位置坐标。pad即padding
 
         l, w = (self.length_width[..., 0] + pad) / 2, (self.length_width[..., 1] + pad) / 2
         x1, y1 = l, w
@@ -400,7 +405,7 @@ class WaymoAgent:
         return rect_list
 
     def get_polygon(self):
-        rect_list = self.get_rect(pad=0.25)
+        rect_list = self.get_rect(pad=0.25)  ## rect_list是agent四个角的坐标
 
         poly_list = []
         for i in range(len(rect_list)):
@@ -408,7 +413,7 @@ class WaymoAgent:
             b = rect_list[i][1]
             c = rect_list[i][2]
             d = rect_list[i][3]
-            poly_list.append(Polygon([a, b, c, d]))
+            poly_list.append(Polygon([a, b, c, d]))  ## Polygon库，可以根据顶点计算面积等
 
         return poly_list
 
@@ -441,14 +446,15 @@ class initDataset(Dataset):
                 data_path = self.data_path
                 data_file_path = os.path.join(data_path, f'{file_indx}.pkl')
                 # file_indx+=1
+                print(data_file_path)
                 with open(data_file_path, 'rb+') as f:
                     datas = pickle.load(f)
                 data = self.process(datas)
                 case_cnt = 0
                 for i in range(len(data)):
                     wash(data[i])
-                    agent_num = data[i]['agent_mask'].sum()
-                    if agent_num < self.cfg['min_agent']:
+                    agent_num = data[i]['agent_mask'].sum()  ## 这里的agent_num是指有效的agent数量
+                    if agent_num < self.cfg['min_agent']:  ## 保证可用车辆达到最低要求
                         continue
                     self.data_loaded[cnt + case_cnt] = data[i]
                     case_cnt += 1

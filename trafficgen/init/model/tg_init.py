@@ -114,7 +114,7 @@ class initializer(pl.LightningModule):
         prob_list = []
         agents_list = []
         # pos = torch.clip(pred['pos'], min=-0.5, max=0.5)
-        speed = torch.clip(pred['speed'], min=0)
+        speed = torch.clip(pred['speed'], min=0) ## 将 pred['speed'] 张量中的每个值与 0 比较，如果某个值小于 0，就将其替换为 0；如果大于或等于 0，则保持原值不变。
         vel_heading = pred['vel_heading']
         for i in range(repeat_num):
             pos = torch.clip(pred['pos'].sample(), min=-0.5, max=0.5)
@@ -153,9 +153,9 @@ class initializer(pl.LightningModule):
         if n == 2:
             loc, tril, diag = para[..., :2], para[..., 2], para[..., 3:]
 
-            sigma_1 = torch.exp(diag[..., 0])
+            sigma_1 = torch.exp(diag[..., 0]) ## 训练模型时经常使用对数尺度来更好地拟合数据，并且防止标准差变得过小或过大。使用 torch.exp（指数函数）将对数标准差转换为标准差。
             sigma_2 = torch.exp(diag[..., 1])
-            rho = torch.tanh(tril)
+            rho = torch.tanh(tril)  ## rho为两个维度之间的相关系数，要在[-1,1]之间，使用tanh()正好可以满足要求
 
             cov = torch.stack([sigma_1**2, rho * sigma_1 * sigma_2, rho * sigma_1 * sigma_2, sigma_2**2],
                               dim=-1).view(*loc.shape[:-1], 2, 2)
@@ -335,7 +335,7 @@ class initializer(pl.LightningModule):
         for i in range(context_num):
             context_agent = data['agent'][0, [i]].cpu().numpy()
             context_agent = WaymoAgent(context_agent)
-            context_poly = context_agent.get_polygon()[0]
+            context_poly = context_agent.get_polygon()[0] ## 存放了context_agent的顶点位置坐标
             shapes.append(context_poly)
             pred_list.append(context_agent)
             vec_indx = data['vec_based_rep'][..., 0]

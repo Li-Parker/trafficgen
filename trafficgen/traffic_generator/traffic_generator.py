@@ -50,6 +50,10 @@ class TrafficGen:
                 batch[key] = batch[key].to(bool)
 
     def generate_scenarios(self, gif=True, save_metadrive=False):
+        print('Raw traffic scenarios...')
+        self.raw_vehicles(vis=True)
+        print('Complete.\n' 'Visualization results are saved in traffic_generator/output/vis/scene_raw\n')
+
         print('Initializing traffic scenarios...')
         self.place_vehicles(vis=True)
         print('Complete.\n' 'Visualization results are saved in traffic_generator/output/vis/scene_initialized\n')
@@ -78,6 +82,31 @@ class TrafficGen:
             print("Visualization results are saved at", output_path)
 
         return model_output
+
+    def raw_vehicles(self, vis=True):
+        context_num = self.cfg['context_num']
+        raw_vis_dir = 'traffic_generator/output/vis/scene_raw/'
+        if not os.path.exists(raw_vis_dir):
+            os.makedirs(raw_vis_dir)
+        data_path = self.cfg['data_path']
+        with torch.no_grad():
+            for idx, data in enumerate(tqdm(self.data_loader)):
+                data_file_path = os.path.join(data_path, f'{idx}.pkl')
+                with open(data_file_path, 'rb+') as f:
+                    original_data = pickle.load(f)
+                batch = copy.deepcopy(data)
+                center = batch['center'][0].cpu().numpy()
+                agent = batch['agent'][0].cpu().numpy()
+                agent_mask = batch['agent_mask'][0].cpu().numpy()
+                agent = agent[agent_mask, ]
+                agents = []
+                for i in agent:
+                    agents.append(WaymoAgent(np.array([i])))
+                rest = batch['rest'][0].cpu().numpy()
+                bound = batch['bound'][0].cpu().numpy()
+                output_path = os.path.join(raw_vis_dir, f'{idx}.png')
+                draw(center, agents, other=rest, edge=bound, save=True, path=output_path)
+        return
 
     def place_vehicles(self, vis=True):
         context_num = self.cfg['context_num']

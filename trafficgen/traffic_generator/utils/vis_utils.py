@@ -7,8 +7,8 @@ import matplotlib.cm as cm
 
 
 def draw(center, agents, other, heat_map=None, save=False, edge=None, path='../vis', abn_idx=None, vis_range=60):
-    fig, ax = plt.subplots(figsize=(10, 10))
-    plt.axis('equal')
+    fig, ax = plt.subplots(figsize=(10, 10))  ## 使用plt.figure来设置窗口尺寸
+    plt.axis('equal')  ## 坐标轴的原点移动到了画布中央
 
     colors = list(mcolors.TABLEAU_COLORS)
     lane_color = 'black'
@@ -23,7 +23,7 @@ def draw(center, agents, other, heat_map=None, save=False, edge=None, path='../v
         plt.ylim(heat_map[1][2:])
     ax.axis('off')
 
-    for j in range(center.shape[0]):
+    for j in range(center.shape[0]):  ## 画出车道线（车道lane中间的白色虚线）
         traf_state = center[j, -1]
 
         x0, y0, x1, y1, = center[j, :4]
@@ -43,7 +43,7 @@ def draw(center, agents, other, heat_map=None, save=False, edge=None, path='../v
             ax.plot((x0, x1), (y0, y1), color=color, alpha=alpha, linewidth=linewidth, zorder=5000)
 
     if edge is not None:
-        for j in range(len(edge)):
+        for j in range(len(edge)):  ## 画出车道的边(白色较粗实线)
 
             # if lane[j, k, -1] == 0: continue
             x0, y0, x1, y1, = edge[j, :4]
@@ -52,7 +52,7 @@ def draw(center, agents, other, heat_map=None, save=False, edge=None, path='../v
             ax.plot((x0, x1), (y0, y1), lane_color, linewidth=1)
             # ax.arrow(x0, y0, x1-x0, y1-y0,head_width=1.5,head_length=0.75,width = 0.1)
     if other is not None:
-        for j in range(len(other)):
+        for j in range(len(other)):  ## 画出其他的边(白色较细实线)
 
             # if lane[j, k, -1] == 0: continue
             x0, y0, x1, y1, = other[j, :4]
@@ -62,10 +62,14 @@ def draw(center, agents, other, heat_map=None, save=False, edge=None, path='../v
 
     for i in range(len(agents)):
 
-        ind = i % 10
-        col = colors[ind]
+        # ind = i % 10
+        # col = colors[ind]
+
+        col = colors[0]
         agent = agents[i]
         center = agent.position[0]
+        if center[0] == 0. and center[1] == 0.:
+            col = 'green'
         if abs(center[0]) > (vis_range - 7) or abs(center[1]) > (vis_range - 7):
             continue
         vel = agent.velocity[0]

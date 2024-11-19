@@ -11,7 +11,9 @@ from trafficgen.init.utils.init_dataset import initDataset
 from trafficgen.utils.config import load_config_init, get_parsed_args
 from trafficgen.utils.evaluation import MMD
 from trafficgen.utils.utils import normalize_angle, setup_seed
+from trafficgen.utils.typedef import AgentType, RoadEdgeType, RoadLineType
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def wash(batch):
     """Transform the loaded raw data to pretty pytorch tensor."""
@@ -25,7 +27,7 @@ def wash(batch):
 
 
 if __name__ == '__main__':
-
+    print("test")
     setup_seed(42)
     args = get_parsed_args()
     cfg = load_config_init(args.config)
@@ -34,8 +36,7 @@ if __name__ == '__main__':
 
     data_loader = DataLoader(test_set, batch_size=1, num_workers=0, shuffle=False, drop_last=True)
 
-    model = initializer.load_from_checkpoint('traffic_generator/ckpt/init.ckpt')
-
+    model = initializer.load_from_checkpoint('traffic_generator/ckpt/init.ckpt').to(device)
     model.eval()
     context_num = 1
     data_path = cfg['data_path']
@@ -52,7 +53,7 @@ if __name__ == '__main__':
         for idx, data in enumerate(tqdm(data_loader)):
             batch = copy.deepcopy(data)
             wash(batch)
-
+            batch = {key: batch[key].cuda() for key in batch}
             # Call the initialization model
             # The output is a dict with these keys: center, rest, bound, agent
             output = model.inference(batch, context_num=context_num)

@@ -49,7 +49,7 @@ def cal_rel_dir(dir1, dir2):
 def wash(batch):
     for key in batch.keys():
         if batch[key].dtype == np.float64:
-            batch[key] = batch[key].astype(np.float32)
+            batch[key] = batch[key].astype(np.float32)  ## 降低精度，不然占内存？
         if 'mask' in key:
             batch[key] = batch[key].astype(bool)
         if isinstance(batch[key], torch.DoubleTensor):

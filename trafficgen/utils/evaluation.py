@@ -11,7 +11,7 @@ from trafficgen.utils.utils import normalize_angle
 
 
 class MMD(Metric):
-    full_state_update: bool = False
+    # full_state_update: bool = False
 
     def __init__(
         self,
@@ -19,7 +19,8 @@ class MMD(Metric):
         kernel_mul=2.0,
         kernel_num=5,
     ):
-        super().__init__(full_state_update=False)
+        # super().__init__(full_state_update=False)
+        super().__init__()
 
         self.add_state("mmd_sum", default=torch.tensor(0.0, device=device), dist_reduce_fx="sum")
         self.add_state("count", default=torch.tensor(0, device=device), dist_reduce_fx="sum")
