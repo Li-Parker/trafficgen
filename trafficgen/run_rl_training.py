@@ -1,15 +1,17 @@
 from ray import tune
-try:
-    from metadrive.utils.waymo_utils.waymo_utils import AgentType
-    from metadrive.utils.waymo_utils.waymo_utils import RoadEdgeType
-    from metadrive.utils.waymo_utils.waymo_utils import RoadLineType
-finally:
-    pass
-from metadrive.envs.real_data_envs.waymo_env import WaymoEnv
+# try:
+#     from metadrive.utils.waymo_utils.waymo_utils import AgentType
+#     from metadrive.utils.waymo_utils.waymo_utils import RoadEdgeType
+#     from metadrive.utils.waymo_utils.waymo_utils import RoadLineType
+# finally:
+#     pass
+
+from metadrive.envs.metadrive_env import MetaDriveEnv
+# from metadrive.envs.real_data_envs.waymo_env import WaymoEnv
 from metadrive.envs.gym_wrapper import createGymWrapper
 from trafficgen.utils.training_utils import train, get_train_parser, DrivingCallbacks
 from ray.rllib.agents.ppo import PPOTrainer
-
+# from ray.rllib.algorithms.ppo import PPO as PPOTrainer
 import os
 
 # Path to: trafficgen/traffic_generator
@@ -19,7 +21,7 @@ HELP = \
 """
 Please specify the path to data folder, which contains many pickle files.
 For example, you can specify 'traffic_generator/output/scene_pkl' to load TrafficGen generated files.
-You can also use 'dataset/generated_1385_training.zip' to specify pre-generated data. 
+You can also use 'dataset/1385_training.zip' to specify pre-generated data. 
 Please refer to 'dataset/README.md' for more information on pre-generated TrafficGen data.
 """
 
@@ -49,11 +51,21 @@ if __name__ == '__main__':
         "Can't find " + data_folder_test + ". It seems that you don't download the validation data. "
         "Please refer to 'dataset/README.md' for more information."
     )
+    env_config = dict(
+        waymo_data_directory=data_folder_train,
 
+        # MetaDrive will load pickle files with index [start_case_index, start_case_index + case_num)
+        start_case_index=0,
+        case_num=case_num_train,
+        reactive_traffic=False,
+    ),
+    env = createGymWrapper(MetaDriveEnv)(env_config)
+    obs = env.reset()
     config = dict(
 
         # ===== Environment =====
-        env=createGymWrapper(WaymoEnv),
+        # env=createGymWrapper(WaymoEnv),
+        env=createGymWrapper(MetaDriveEnv),
         env_config=dict(
             waymo_data_directory=data_folder_train,
 

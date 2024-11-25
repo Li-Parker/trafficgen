@@ -31,16 +31,17 @@ HELP = \
 """
 Please specify the path to data folder, which contains many pickle files.
 For example, you can specify 'traffic_generator/output/scene_pkl' to load TrafficGen generated files.
-You can also use 'dataset/generated_1385_training.zip' to specify pre-generated data. 
+You can also use 'dataset/1385_training.zip' to specify pre-generated data. 
 Please refer to 'dataset/README.md' for more information on pre-generated TrafficGen data.
 """
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--replay", action="store_true", help="Whether to replay ego vehicle actions.")
+    parser.add_argument("--replay", action="store_true", help="Whether to replay ego vehicle actions.",default=True)
     parser.add_argument(
         "--no_replay_traffic",
         action="store_true",
+        # default=True,
         help=
         "If True, do not replay traffic vehicles' trajectories but instead use IDM policy to control all traffic vehicles."
     )

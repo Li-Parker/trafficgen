@@ -345,20 +345,20 @@ class initializer(pl.LightningModule):
         center = data['center'][0]
         center_mask = data['center_mask'][0].cpu().numpy()
 
-        for i in range(context_num, max(agent_num, minimum_agent)):
-            data['agent_mask'][:, :i] = 1
+        for i in range(context_num, max(2, minimum_agent)):
+            data['agent_mask'][:, :i] = 1  ## 迭代进行的，所以，前i个已经被确定了，故agent_mask=0
             data['agent_mask'][:, i:] = 0
 
             pred = self.forward(data, False)
 
-            pred['prob'][:, idx_list] = 0
+            pred['prob'][:, idx_list] = 0  ## idx_list中存放的是哪些已经被选中的agent，即他们不在变化的范围之内，而设置对应的pred=0表明该路段已被agent占用，就不要再在这个Lane上放置agent了
             cnt = 0
-            while cnt < 3:
+            while cnt < 3:  ## 重复三次，提高命中概率（成功放置合理的agent）
                 agents, prob, indx = self.sample_from_distribution(pred, center)
-                the_agent = agents.get_agent(indx)
+                the_agent = agents.get_agent(indx)  ## 生成的新的agent
                 poly = the_agent.get_polygon()[0]
                 intersect = False
-                for shape in shapes:
+                for shape in shapes:  ## 查看新的agent和之前的一些已经被放置的agent是否重叠
                     if poly.intersects(shape):
                         intersect = True
                         break
